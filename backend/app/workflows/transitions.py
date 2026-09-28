@@ -17,7 +17,6 @@ ALLOWED_TRANSITIONS: dict[WorkflowState, frozenset[WorkflowState]] = {
     WorkflowState.BOOKING_RETRY: frozenset({WorkflowState.BOOKING, WorkflowState.FAILED}),
     WorkflowState.CONFIRMED: frozenset({WorkflowState.CANCELLED, WorkflowState.RESCHEDULE_REQUESTED}),
     WorkflowState.RESCHEDULE_REQUESTED: frozenset({WorkflowState.SEARCHING_AVAILABILITY, WorkflowState.PROPOSED}),
-    WorkflowState.NO_AVAILABILITY: frozenset({WorkflowState.WAITING_FOR_STAFF}),
     WorkflowState.CANCELLED: frozenset(),
     WorkflowState.REJECTED: frozenset(),
     WorkflowState.EXPIRED: frozenset(),
