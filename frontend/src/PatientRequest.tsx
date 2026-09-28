@@ -1,5 +1,7 @@
-import { FormEvent, useState } from "react";
-import { createAppointmentRequest, IntakeResponse } from "./api";
+import { useState } from "react";
+import type { FormEvent } from "react";
+import { createAppointmentRequest } from "./api";
+import type { IntakeResponse } from "./api";
 
 export default function PatientRequest() {
   const [text, setText] = useState(
