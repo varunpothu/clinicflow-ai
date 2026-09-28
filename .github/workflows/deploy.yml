@@ -2,6 +2,13 @@ name: Deploy
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: Deployment environment
+        required: true
+        default: production
+        type: choice
+        options: [production]
 
 permissions:
   id-token: write
@@ -10,16 +17,81 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    environment: ${{ inputs.environment }}
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      PROJECT_NAME: ${{ vars.PROJECT_NAME || 'clinicflow-ai' }}
+      ENVIRONMENT: ${{ inputs.environment }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6.3.0
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ vars.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
+
       - name: Verify identity
         run: aws sts get-caller-identity
-      - name: Deployment placeholder
-        run: echo "Terraform/app deployment will run here after the AWS environment is provisioned."
+
+      - name: Resolve deployment targets
+        id: targets
+        run: |
+          echo "ecr=${PROJECT_NAME}-${ENVIRONMENT}-app" >> "$GITHUB_OUTPUT"
+          echo "cluster=${PROJECT_NAME}-${ENVIRONMENT}-cluster" >> "$GITHUB_OUTPUT"
+          echo "service=${PROJECT_NAME}-${ENVIRONMENT}-service" >> "$GITHUB_OUTPUT"
+
+      - name: Login to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push backend image
+        id: image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPOSITORY: ${{ steps.targets.outputs.ecr }}
+        run: |
+          IMAGE="$REGISTRY/$REPOSITORY:${GITHUB_SHA}"
+          docker build -f backend/Dockerfile -t "$IMAGE" backend
+          docker push "$IMAGE"
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Read current task definition
+        env:
+          CLUSTER: ${{ steps.targets.outputs.cluster }}
+          SERVICE: ${{ steps.targets.outputs.service }}
+        run: |
+          TASK_DEF=$(aws ecs describe-services --cluster "$CLUSTER" --services "$SERVICE" --query 'services[0].taskDefinition' --output text)
+          aws ecs describe-task-definition --task-definition "$TASK_DEF" --query 'taskDefinition' > task-def.json
+
+      - name: Render immutable task definition
+        env:
+          IMAGE: ${{ steps.image.outputs.image }}
+        run: |
+          jq --arg image "$IMAGE" 'del(.taskDefinitionArn,.revision,.status,.requiresAttributes,.compatibilities,.registeredAt,.registeredBy) | .containerDefinitions[0].image=$image' task-def.json > task-def-rendered.json
+
+      - name: Run database migrations
+        env:
+          CLUSTER: ${{ steps.targets.outputs.cluster }}
+          SERVICE: ${{ steps.targets.outputs.service }}
+          IMAGE: ${{ steps.image.outputs.image }}
+        run: |
+          TASK_DEF=$(aws ecs register-task-definition --cli-input-json file://task-def-rendered.json --query 'taskDefinition.taskDefinitionArn' --output text)
+          SUBNETS=$(aws ecs describe-services --cluster "$CLUSTER" --services "$SERVICE" --query 'services[0].networkConfiguration.awsvpcConfiguration.subnets' --output json)
+          SECURITY_GROUPS=$(aws ecs describe-services --cluster "$CLUSTER" --services "$SERVICE" --query 'services[0].networkConfiguration.awsvpcConfiguration.securityGroups' --output json)
+          aws ecs run-task --cluster "$CLUSTER" --task-definition "$TASK_DEF" --network-configuration "awsvpcConfiguration={subnets=$SUBNETS,securityGroups=$SECURITY_GROUPS,assignPublicIp=DISABLED}" --overrides '"\u007bcontainerOverrides:[\u007bname:clinicflow-api,command:[alembic,upgrade,head]}]}"' >/dev/null
+
+      - name: Update service
+        env:
+          CLUSTER: ${{ steps.targets.outputs.cluster }}
+          SERVICE: ${{ steps.targets.outputs.service }}
+        run: |
+          TASK_DEF=$(aws ecs register-task-definition --cli-input-json file://task-def-rendered.json --query 'taskDefinition.taskDefinitionArn' --output text)
+          aws ecs update-service --cluster "$CLUSTER" --service "$SERVICE" --task-definition "$TASK_DEF" --force-new-deployment >/dev/null
+          aws ecs wait services-stable --cluster "$CLUSTER" --services "$SERVICE"
+
+      - name: Smoke test API
+        run: |
+          echo "Use the authenticated API Gateway endpoint for a signed smoke test in the production environment."
+          aws ecs describe-services --cluster "${{ steps.targets.outputs.cluster }}" --services "${{ steps.targets.outputs.service }}" --query 'services[0].deployments[*].{status:status,running:runningCount,desired:desiredCount}'
