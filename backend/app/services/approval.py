@@ -1,6 +1,5 @@
 from uuid import UUID
 
-from app.domain.proposal import AppointmentProposal
 from app.services.booking import BookingConflict, BookingResult, BookingService
 from app.services.proposal_store import ProposalStore
 
