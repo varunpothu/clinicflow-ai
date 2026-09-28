@@ -15,3 +15,9 @@ variable "project_name" {
   type        = string
   default     = "clinicflow-ai"
 }
+
+variable "web_url" {
+  description = "Browser application URL used by the Cognito OAuth client."
+  type        = string
+  default     = "http://localhost:5173"
+}
