@@ -63,6 +63,7 @@ jobs:
           SERVICE: ${{ steps.targets.outputs.service }}
         run: |
           TASK_DEF=$(aws ecs describe-services --cluster "$CLUSTER" --services "$SERVICE" --query 'services[0].taskDefinition' --output text)
+          test "$TASK_DEF" != "None"
           aws ecs describe-task-definition --task-definition "$TASK_DEF" --query 'taskDefinition' > task-def.json
 
       - name: Render immutable task definition
@@ -71,27 +72,38 @@ jobs:
         run: |
           jq --arg image "$IMAGE" 'del(.taskDefinitionArn,.revision,.status,.requiresAttributes,.compatibilities,.registeredAt,.registeredBy) | .containerDefinitions[0].image=$image' task-def.json > task-def-rendered.json
 
-      - name: Run database migrations
+      - name: Register task definition and run migrations
+        id: release
         env:
           CLUSTER: ${{ steps.targets.outputs.cluster }}
           SERVICE: ${{ steps.targets.outputs.service }}
-          IMAGE: ${{ steps.image.outputs.image }}
         run: |
           TASK_DEF=$(aws ecs register-task-definition --cli-input-json file://task-def-rendered.json --query 'taskDefinition.taskDefinitionArn' --output text)
           SUBNETS=$(aws ecs describe-services --cluster "$CLUSTER" --services "$SERVICE" --query 'services[0].networkConfiguration.awsvpcConfiguration.subnets' --output json)
           SECURITY_GROUPS=$(aws ecs describe-services --cluster "$CLUSTER" --services "$SERVICE" --query 'services[0].networkConfiguration.awsvpcConfiguration.securityGroups' --output json)
-          aws ecs run-task --cluster "$CLUSTER" --task-definition "$TASK_DEF" --network-configuration "awsvpcConfiguration={subnets=$SUBNETS,securityGroups=$SECURITY_GROUPS,assignPublicIp=DISABLED}" --overrides '"\u007bcontainerOverrides:[\u007bname:clinicflow-api,command:[alembic,upgrade,head]}]}"' >/dev/null
+          jq -n --argjson subnets "$SUBNETS" --argjson groups "$SECURITY_GROUPS" '{awsvpcConfiguration:{subnets:$subnets,securityGroups:$groups,assignPublicIp:"DISABLED"}}' > network.json
+          printf '%s\n' '{"containerOverrides":[{"name":"clinicflow-api","command":["alembic","upgrade","head"]}]}' > migration-overrides.json
+          TASK_ARN=$(aws ecs run-task --cluster "$CLUSTER" --task-definition "$TASK_DEF" --network-configuration file://network.json --overrides file://migration-overrides.json --query 'tasks[0].taskArn' --output text)
+          test "$TASK_ARN" != "None"
+          aws ecs wait tasks-stopped --cluster "$CLUSTER" --tasks "$TASK_ARN"
+          EXIT_CODE=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" --query 'tasks[0].containers[?name==`clinicflow-api`].exitCode | [0]' --output text)
+          test "$EXIT_CODE" = "0"
+          echo "task_definition=$TASK_DEF" >> "$GITHUB_OUTPUT"
 
       - name: Update service
         env:
           CLUSTER: ${{ steps.targets.outputs.cluster }}
           SERVICE: ${{ steps.targets.outputs.service }}
+          TASK_DEF: ${{ steps.release.outputs.task_definition }}
         run: |
-          TASK_DEF=$(aws ecs register-task-definition --cli-input-json file://task-def-rendered.json --query 'taskDefinition.taskDefinitionArn' --output text)
           aws ecs update-service --cluster "$CLUSTER" --service "$SERVICE" --task-definition "$TASK_DEF" --force-new-deployment >/dev/null
           aws ecs wait services-stable --cluster "$CLUSTER" --services "$SERVICE"
 
       - name: Smoke test API
+        env:
+          API_BASE_URL: ${{ vars.API_GATEWAY_URL }}
         run: |
-          echo "Use the authenticated API Gateway endpoint for a signed smoke test in the production environment."
-          aws ecs describe-services --cluster "${{ steps.targets.outputs.cluster }}" --services "${{ steps.targets.outputs.service }}" --query 'services[0].deployments[*].{status:status,running:runningCount,desired:desiredCount}'
+          test -n "$API_BASE_URL"
+          curl --fail --silent --show-error "$API_BASE_URL/api/v1/health/live"
+          echo
+          echo "Deployment completed: ${{ steps.release.outputs.task_definition }}"
