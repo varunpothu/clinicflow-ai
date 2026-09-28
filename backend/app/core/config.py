@@ -1,7 +1,6 @@
 from functools import lru_cache
 from urllib.parse import quote_plus
 
-from pydantic import computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -29,7 +28,6 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    @computed_field
     @property
     def resolved_database_url(self) -> str:
         if self.database_url:
