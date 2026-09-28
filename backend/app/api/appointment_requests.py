@@ -1,22 +1,31 @@
-from uuid import uuid4
-
 from fastapi import APIRouter, HTTPException, status
 
-from app.domain.appointment_request import AppointmentRequest
-from app.domain.validation import validate_request
+from app.core.config import get_settings
 from app.schemas.appointment import AppointmentRequestAccepted, AppointmentRequestCreate
+from app.workflows.intake import AppointmentIntakeWorkflow
 
 router = APIRouter(prefix="/appointment-requests", tags=["appointment-requests"])
 
 
 @router.post("", response_model=AppointmentRequestAccepted, status_code=status.HTTP_202_ACCEPTED)
 def create_appointment_request(payload: AppointmentRequestCreate) -> AppointmentRequestAccepted:
-    request = AppointmentRequest(request_id=uuid4(), **payload.model_dump())
-    validation = validate_request(request)
-    if not validation.valid:
-        raise HTTPException(status_code=422, detail={"code": "INVALID_REQUEST", "errors": validation.errors})
+    workflow = AppointmentIntakeWorkflow(get_settings())
+    try:
+        result = workflow.start(
+            patient_id=payload.patient_id,
+            appointment_type=payload.appointment_type,
+            natural_language=payload.natural_language,
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"code": str(exc)},
+        ) from exc
+
     return AppointmentRequestAccepted(
-        request_id=request.request_id,
+        request_id=result.request.request_id,
         status="accepted",
-        next_state="EXTRACTING" if request.natural_language else "VALIDATING",
+        next_state=result.state,
+        ai_intent=result.ai_intent,
+        validation_errors=result.validation.errors,
     )
