@@ -10,4 +10,6 @@ class RetryPolicy:
     def delay_for(self, attempt: int) -> float:
         if attempt < 1:
             raise ValueError("attempt must be >= 1")
-        return min(self.base_delay_seconds * (2 ** (attempt - 1)), self.max_delay_seconds)
+        multiplier = float(2 ** (attempt - 1))
+        delay = self.base_delay_seconds * multiplier
+        return float(min(delay, self.max_delay_seconds))
