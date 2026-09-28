@@ -16,6 +16,8 @@ dependencies = [
   "aiosqlite>=0.20,<1",
   "structlog>=24.4,<26",
   "boto3>=1.43,<2",
+  "psycopg[binary]>=3.2,<4",
+  "alembic>=1.14,<2",
 ]
 
 [project.optional-dependencies]
