@@ -17,3 +17,32 @@ nav{display:grid;gap:7px}.nav-item{width:100%;padding:12px 14px;border-radius:12
 .toast{position:fixed;right:28px;bottom:26px;background:#0e172b;color:white;border-radius:12px;padding:13px 16px;font-size:11px;box-shadow:0 12px 28px rgba(15,23,42,.28)}
 @media(max-width:1250px){body{min-width:1000px}.content{padding:25px}.hero-card{gap:20px}.hero-flow{transform:scale(.9);transform-origin:right center}}
 @media(max-width:1080px){.sidebar{width:210px}.stats{grid-template-columns:repeat(2,1fr)}.workspace,.bottom-grid{grid-template-columns:1fr}.intent-result{grid-template-columns:1fr}}
+
+
+.login-card {
+  width: min(520px, calc(100vw - 48px));
+  margin: auto;
+  padding: 48px;
+  border-radius: 28px;
+  background: var(--panel, #ffffff);
+  box-shadow: 0 24px 80px rgba(32, 38, 74, 0.14);
+  text-align: center;
+}
+
+.login-card .brand-mark {
+  margin: 0 auto 18px;
+}
+
+.login-card h1 {
+  margin: 12px 0 8px;
+}
+
+.login-card p {
+  margin: 0 0 28px;
+  line-height: 1.6;
+}
+
+.login-card .button {
+  width: 100%;
+  justify-content: center;
+}
