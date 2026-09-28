@@ -4,7 +4,7 @@
 
 > **Core control principle:** AI proposes → deterministic rules validate → human approves → system executes → every important action is auditable.
 
-![ClinicFlow AI architecture](docs/assets/workflow-control-plane.svg)
+![ClinicFlow AI appointment orchestration architecture](docs/assets/workflow-control-plane-v2.svg)
 
 ## 🌈 Visual story
 
