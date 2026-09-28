@@ -1,6 +1,6 @@
 resource "aws_lb" "app" {
   name               = substr("${local.name_prefix}-alb", 0, 32)
-  internal           = false
+  internal           = true
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
   subnets            = aws_subnet.public[*].id
