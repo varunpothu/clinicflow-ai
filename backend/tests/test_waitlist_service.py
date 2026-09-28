@@ -9,6 +9,13 @@ from app.services.waitlist import WaitlistService
 def test_waitlist_rejects_invalid_window() -> None:
     service = WaitlistService()
     start = datetime.now(UTC)
+    with pytest.raises(ValueError, match="TIMEZONE_REQUIRED"):
+        service.add(
+            patient_id=uuid4(),
+            appointment_type="routine",
+            earliest=start.replace(tzinfo=None),
+            latest=start + timedelta(minutes=30),
+        )
     with pytest.raises(ValueError, match="INVALID_WAITLIST_WINDOW"):
         service.add(
             patient_id=uuid4(),
