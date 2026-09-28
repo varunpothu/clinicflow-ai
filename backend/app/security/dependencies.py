@@ -1,6 +1,6 @@
 from uuid import UUID, uuid4
 
-from fastapi import Header, HTTPException, status
+from fastapi import Depends, Header, HTTPException, status
 
 from app.core.config import get_settings
 from app.security.auth import Principal
@@ -35,7 +35,9 @@ def get_demo_principal(
 
 
 def require_demo_permission(permission: Permission):
-    def dependency(principal: Principal = __import__("fastapi").Depends(get_demo_principal)) -> Principal:
+    def dependency(
+        principal: Principal = Depends(get_demo_principal),
+    ) -> Principal:
         if not has_permission(principal.role, permission):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="FORBIDDEN")
         return principal
