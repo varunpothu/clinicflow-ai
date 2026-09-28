@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID
 
 
@@ -15,7 +15,7 @@ def cancel_appointment(appointment: dict[str, object], *, actor_id: UUID) -> dic
     updated["status"] = "CANCELLED"
     updated["version"] = int(updated.get("version", 1)) + 1
     updated["cancelled_by"] = str(actor_id)
-    updated["cancelled_at"] = datetime.utcnow().isoformat()
+    updated["cancelled_at"] = datetime.now(UTC).isoformat()
     return updated
 
 
