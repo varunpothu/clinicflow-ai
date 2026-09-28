@@ -8,6 +8,7 @@ from starlette.responses import Response
 
 from app.observability.logging import logger
 from app.observability.metrics import metrics
+from app.observability.tracing import request_span
 
 
 class CorrelationIdMiddleware(BaseHTTPMiddleware):
@@ -18,7 +19,8 @@ class CorrelationIdMiddleware(BaseHTTPMiddleware):
     ) -> Response:
         correlation_id = request.headers.get("X-Correlation-ID") or str(uuid4())
         started = perf_counter()
-        response = await call_next(request)
+        with request_span(request.method, request.url.path, correlation_id):
+            response = await call_next(request)
         metrics.increment("http.requests.total")
         metrics.increment(f"http.status.{response.status_code}")
         metrics.observe_latency("http.request", started)
