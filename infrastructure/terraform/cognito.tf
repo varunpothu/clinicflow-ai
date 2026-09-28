@@ -1,3 +1,15 @@
+resource "random_string" "cognito_domain" {
+  length  = 6
+  lower   = true
+  upper   = false
+  numeric = true
+  special = false
+}
+
+resource "aws_cognito_user_pool_domain" "clinic" {
+  domain       = "${local.name_prefix}-${random_string.cognito_domain.result}"
+  user_pool_id = aws_cognito_user_pool.clinic.id
+}
 resource "aws_cognito_user_pool" "clinic" {
   name = "${local.name_prefix}-users"
 
@@ -70,4 +82,11 @@ resource "aws_cognito_user_pool_client" "web" {
     "ALLOW_REFRESH_TOKEN_AUTH",
     "ALLOW_USER_SRP_AUTH"
   ]
+
+  allowed_oauth_flows_user_pool_client = true
+  allowed_oauth_flows                  = ["code"]
+  allowed_oauth_scopes                 = ["openid", "email"]
+  supported_identity_providers         = ["COGNITO"]
+  callback_urls                        = [var.web_url]
+  logout_urls                          = [var.web_url]
 }
