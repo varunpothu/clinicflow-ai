@@ -28,7 +28,7 @@ class LocalWorkflowEngine:
 
 class StepFunctionsWorkflow:
     def __init__(self, state_machine_arn: str, region_name: str) -> None:
-        import boto3
+        import boto3  # type: ignore[import-untyped]
 
         self.state_machine_arn = state_machine_arn
         self.client = boto3.client("stepfunctions", region_name=region_name)
