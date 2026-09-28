@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     clinic_timezone: str = "Europe/London"
     ai_provider: str = "mock"
     aws_region: str = "eu-west-2"
+    bedrock_model_id: str | None = None
+    bedrock_guardrail_identifier: str | None = None
+    bedrock_guardrail_version: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",
