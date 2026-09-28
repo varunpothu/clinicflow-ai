@@ -1,0 +1,85 @@
+{
+  "Comment": "ClinicFlow AI durable appointment workflow. Resource ARNs are supplied by Terraform.",
+  "StartAt": "ExtractIntent",
+  "States": {
+    "ExtractIntent": {
+      "Type": "Task",
+      "Resource": "$AI_INTENT_TASK_ARN",
+      "Next": "ValidateIntent",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed", "States.Timeout"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 2,
+          "BackoffRate": 2
+        }
+      ]
+    },
+    "ValidateIntent": {
+      "Type": "Task",
+      "Resource": "$VALIDATE_INTENT_TASK_ARN",
+      "Next": "FindAvailability"
+    },
+    "FindAvailability": {
+      "Type": "Task",
+      "Resource": "$AVAILABILITY_TASK_ARN",
+      "Next": "CreateProposal"
+    },
+    "CreateProposal": {
+      "Type": "Task",
+      "Resource": "$PROPOSAL_TASK_ARN",
+      "Next": "RequestHumanApproval"
+    },
+    "RequestHumanApproval": {
+      "Type": "Task",
+      "Resource": "$APPROVAL_CALLBACK_TASK_ARN",
+      "Parameters": {
+        "workflow_id.$": "$$.Execution.Id",
+        "proposal_id.$": "$.proposal_id",
+        "task_token.$": "$$.Task.Token"
+      },
+      "TimeoutSeconds": 86400,
+      "Next": "RevalidateSlot",
+      "Catch": [
+        {
+          "ErrorEquals": ["States.Timeout"],
+          "Next": "ApprovalExpired"
+        }
+      ]
+    },
+    "RevalidateSlot": {
+      "Type": "Task",
+      "Resource": "$REVALIDATE_TASK_ARN",
+      "Next": "BookAppointment",
+      "Catch": [
+        {
+          "ErrorEquals": ["BookingConflict"],
+          "Next": "RegenerateProposal"
+        }
+      ]
+    },
+    "BookAppointment": {
+      "Type": "Task",
+      "Resource": "$BOOKING_TASK_ARN",
+      "Next": "EmitConfirmation"
+    },
+    "EmitConfirmation": {
+      "Type": "Task",
+      "Resource": "$OUTBOX_TASK_ARN",
+      "Next": "WorkflowComplete"
+    },
+    "RegenerateProposal": {
+      "Type": "Task",
+      "Resource": "$PROPOSAL_TASK_ARN",
+      "Next": "RequestHumanApproval"
+    },
+    "ApprovalExpired": {
+      "Type": "Task",
+      "Resource": "$EXCEPTION_TASK_ARN",
+      "Next": "WorkflowComplete"
+    },
+    "WorkflowComplete": {
+      "Type": "Succeed"
+    }
+  }
+}
