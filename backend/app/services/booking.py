@@ -22,10 +22,10 @@ class BookingService:
     def __init__(
         self,
         store: DemoStore | None = None,
-        idempotency: IdempotencyStore | None = None,
+        idempotency: IdempotencyStore[BookingResult] | None = None,
     ) -> None:
         self.store = store or DemoStore()
-        self.idempotency = idempotency or IdempotencyStore()
+        self.idempotency = idempotency or IdempotencyStore[BookingResult]()
 
     def approve_and_book(
         self,
