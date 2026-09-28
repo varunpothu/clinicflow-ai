@@ -9,7 +9,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.correlation import get_correlation_id
 from app.db.dependencies import get_session
 from app.models.approval import Approval
-from app.models.proposal import Proposal
 from app.repositories.approvals import ApprovalRepository
 from app.repositories.proposals import ProposalRepository
 from app.security.auth import Principal
