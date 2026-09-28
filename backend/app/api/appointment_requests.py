@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
-from app.core.correlation import get_correlation_id
 from app.db.dependencies import get_session
 from app.schemas.appointment import AppointmentRequestAccepted, AppointmentRequestCreate
 from app.security.auth import Principal
