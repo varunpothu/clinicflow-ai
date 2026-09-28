@@ -112,7 +112,10 @@ resource "aws_ecs_task_definition" "app" {
       environment = [
         { name = "APP_ENV", value = "production" },
         { name = "AI_PROVIDER", value = "bedrock" },
-        { name = "AWS_REGION", value = var.aws_region }
+        { name = "AWS_REGION", value = var.aws_region },
+        { name = "DATABASE_HOST", value = aws_db_instance.postgres.address },
+        { name = "DATABASE_NAME", value = aws_db_instance.postgres.db_name },
+        { name = "DATABASE_PORT", value = tostring(aws_db_instance.postgres.port) }
       ]
       secrets = [
         {
