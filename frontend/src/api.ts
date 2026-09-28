@@ -25,7 +25,12 @@ export async function createAppointmentRequest(
 ): Promise<IntakeResponse> {
   const response = await fetch(`${API_BASE}/api/v1/appointment-requests`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "X-Demo-Role": "PATIENT",
+      "X-Demo-Subject": request.patient_id,
+      "Idempotency-Key": crypto.randomUUID(),
+    },
     body: JSON.stringify(request),
   });
 
