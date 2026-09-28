@@ -44,6 +44,13 @@ resource "aws_apigatewayv2_integration" "alb" {
   connection_type        = "VPC_LINK"
   connection_id          = aws_apigatewayv2_vpc_link.app.id
   payload_format_version = "1.0"
+
+  request_parameters = {
+    "overwrite:header.X-Principal-Subject" = "$context.authorizer.claims.sub"
+    "overwrite:header.X-Principal-Clinic"  = "$context.authorizer.claims.custom:clinic_id"
+    "overwrite:header.X-Principal-Groups"  = "$context.authorizer.claims.cognito:groups"
+    "overwrite:header.X-Correlation-ID"    = "$context.requestId"
+  }
 }
 
 resource "aws_apigatewayv2_route" "default" {
