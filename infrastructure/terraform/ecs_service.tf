@@ -56,13 +56,6 @@ resource "aws_iam_role_policy" "ecs_task" {
       {
         Effect = "Allow"
         Action = [
-          "secretsmanager:GetSecretValue"
-        ]
-        Resource = aws_secretsmanager_secret.database.arn
-      },
-      {
-        Effect = "Allow"
-        Action = [
           "bedrock:Converse",
           "bedrock:ConverseStream"
         ]
@@ -79,6 +72,21 @@ resource "aws_iam_role_policy" "ecs_task" {
         Resource = aws_sqs_queue.booking_events.arn
       }
     ]
+  })
+}
+
+
+
+resource "aws_iam_role_policy" "ecs_task_execution_secrets" {
+  role = aws_iam_role.ecs_task_execution.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["secretsmanager:GetSecretValue"]
+      Resource = aws_secretsmanager_secret.database.arn
+    }]
   })
 }
 
