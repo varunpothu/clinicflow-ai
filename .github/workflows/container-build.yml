@@ -1,0 +1,17 @@
+name: Container Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Build backend image
+        run: docker build -f backend/Dockerfile -t clinicflow-ai-backend:ci .
+      - name: Build frontend image
+        run: docker build -f frontend/Dockerfile -t clinicflow-ai-frontend:ci .
