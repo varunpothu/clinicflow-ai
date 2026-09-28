@@ -1,6 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.appointment import Appointment
@@ -9,6 +10,12 @@ from app.models.appointment import Appointment
 class AppointmentRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
+
+    async def get(self, appointment_id: UUID) -> Appointment | None:
+        result = await self.session.execute(
+            select(Appointment).where(Appointment.id == appointment_id)
+        )
+        return result.scalar_one_or_none()
 
     async def create(
         self,
