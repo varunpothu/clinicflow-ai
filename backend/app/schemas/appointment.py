@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from app.ai.provider import ExtractedIntent
+
 
 class AppointmentRequestCreate(BaseModel):
     patient_id: UUID
@@ -16,3 +18,5 @@ class AppointmentRequestAccepted(BaseModel):
     request_id: UUID
     status: str
     next_state: str
+    ai_intent: ExtractedIntent | None = None
+    validation_errors: tuple[str, ...] = ()
