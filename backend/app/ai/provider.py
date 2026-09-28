@@ -47,7 +47,7 @@ class BedrockAIProvider:
         guardrail_identifier: str | None = None,
         guardrail_version: str | None = None,
     ) -> None:
-        import boto3
+        import boto3  # type: ignore[import-untyped]
 
         self.model_id = model_id
         self.client = boto3.client("bedrock-runtime", region_name=region_name)
