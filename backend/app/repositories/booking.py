@@ -1,10 +1,12 @@
 import json
 from datetime import UTC, datetime
+from typing import cast
 from uuid import UUID
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.proposal import Proposal
 from app.repositories.approvals import ApprovalRepository
 from app.repositories.appointments import AppointmentConflictError, AppointmentRepository
 from app.repositories.audit import AuditRepository
@@ -51,7 +53,10 @@ class AtomicBookingService:
             if existing is not None:
                 if existing.fingerprint != self._fingerprint(proposal):
                     raise ValueError("IDEMPOTENCY_KEY_REUSE")
-                return json.loads(existing.result_json)
+                cached = json.loads(existing.result_json)
+                if not isinstance(cached, dict):
+                    raise ValueError("IDEMPOTENCY_RECORD_INVALID")
+                return cast(dict[str, object], cached)
 
             try:
                 appointment = await self.appointments.create(
@@ -108,9 +113,5 @@ class AtomicBookingService:
             return result
 
     @staticmethod
-    def _fingerprint(proposal: object) -> str:
-        proposal_id = getattr(proposal, "id", "")
-        version = getattr(proposal, "version", "")
-        starts_at = getattr(proposal, "starts_at", "")
-        clinician_id = getattr(proposal, "clinician_id", "")
-        return f"{proposal_id}:{version}:{clinician_id}:{starts_at}"
+    def _fingerprint(proposal: Proposal) -> str:
+        return f"{proposal.id}:{proposal.version}:{proposal.clinician_id}:{proposal.starts_at}"
