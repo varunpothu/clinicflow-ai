@@ -1,3 +1,4 @@
+import { getAuthHeaders } from "./auth";
 export type AppointmentRequest = {
   patient_id: string;
   appointment_type: string;
@@ -27,9 +28,8 @@ export async function createAppointmentRequest(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Demo-Role": "PATIENT",
-      "X-Demo-Subject": request.patient_id,
       "Idempotency-Key": crypto.randomUUID(),
+      ...(await getAuthHeaders()),
     },
     body: JSON.stringify(request),
   });
