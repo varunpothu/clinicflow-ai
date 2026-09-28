@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,14 +17,12 @@ router = APIRouter(prefix="/appointment-requests", tags=["appointment-requests"]
 
 @router.get("/{request_id}")
 async def get_appointment_request(
-    request_id,
+    request_id: UUID,
     principal: Principal = Depends(
         require_demo_permission(Permission.REQUEST_APPOINTMENT)
     ),
     session: AsyncSession = Depends(get_session),
 ) -> dict[str, object]:
-    from uuid import UUID
-
     record = await AppointmentRequestRepository(session).get(UUID(str(request_id)))
     if record is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="REQUEST_NOT_FOUND")
