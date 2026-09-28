@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from uuid import UUID, uuid4
 
 from fastapi import Depends, Header, HTTPException, status
@@ -34,7 +35,7 @@ def get_demo_principal(
     return Principal(subject_id=subject_id, role=role, clinic_id="northstar")
 
 
-def require_demo_permission(permission: Permission):
+def require_demo_permission(permission: Permission) -> Callable[..., Principal]:
     def dependency(
         principal: Principal = Depends(get_demo_principal),
     ) -> Principal:
