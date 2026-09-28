@@ -1,4 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Login from "./Login";
+import { handleAuthCallback, isAuthenticated, logout, productionAuthEnabled } from "./auth";
 import PatientRequest from "./PatientRequest";
 
 type Approval = {
@@ -30,6 +32,31 @@ function StatCard({ label, value, hint, tone }: { label: string; value: string; 
 }
 
 export default function App() {
+  const [authenticated, setAuthenticated] = useState(
+    !productionAuthEnabled || isAuthenticated(),
+  );
+  const [authError, setAuthError] = useState("");
+
+  useEffect(() => {
+    if (!productionAuthEnabled || window.location.pathname !== "/auth/callback") return;
+    handleAuthCallback(window.location.search)
+      .then(() => {
+        window.history.replaceState({}, document.title, "/");
+        setAuthenticated(true);
+      })
+      .catch((error: unknown) => {
+        setAuthError(error instanceof Error ? error.message : "Sign-in failed.");
+      });
+  }, []);
+
+  if (productionAuthEnabled && window.location.pathname === "/auth/callback" && !authenticated) {
+    return <main className="shell"><section className="login-card"><h1>Signing you in…</h1><p>{authError || "Completing secure authentication."}</p></section></main>;
+  }
+
+  if (productionAuthEnabled && !authenticated) {
+    return <Login />;
+  }
+
   const [active, setActive] = useState("Overview");
   const [approvals, setApprovals] = useState(initialApprovals);
   const [toast, setToast] = useState("");
@@ -59,7 +86,7 @@ export default function App() {
       <main className="content">
         <header className="topbar">
           <div><div className="eyebrow">NORTHSTAR HEALTH CLINIC</div><h1>{active === "Overview" ? "Good afternoon, team" : active}</h1><p>Human-in-the-loop appointment operations dashboard.</p></div>
-          <div className="header-actions"><span className="environment-chip">LOCAL DEMO</span><button className="avatar">VS</button></div>
+          <div className="header-actions"><span className="environment-chip">{productionAuthEnabled ? "PRODUCTION AUTH" : "LOCAL DEMO"}</span><button className="avatar" onClick={() => productionAuthEnabled && logout()} title={productionAuthEnabled ? "Sign out" : "Demo user"}>VS</button></div>
         </header>
 
         {active === "Patient demo" ? (
