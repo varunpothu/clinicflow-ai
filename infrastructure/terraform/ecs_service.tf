@@ -56,8 +56,8 @@ resource "aws_iam_role_policy" "ecs_task" {
       {
         Effect = "Allow"
         Action = [
-          "bedrock:Converse",
-          "bedrock:ConverseStream"
+          "bedrock:InvokeModel",
+          "bedrock:InvokeModelWithResponseStream"
         ]
         Resource = "*"
       },
