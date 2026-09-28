@@ -6,7 +6,7 @@ from pydantic import ValidationError
 
 from app.ai.contracts import AppointmentIntent
 from app.ai.guardrails import validate_user_text
-from app.ai.prompts import PROMPT_VERSION, SYSTEM_PROMPT
+from app.ai.prompts import SYSTEM_PROMPT
 
 
 @dataclass(frozen=True)
