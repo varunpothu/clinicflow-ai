@@ -21,7 +21,7 @@ class ConsoleEventPublisher:
 
 class SQSMessagePublisher:
     def __init__(self, queue_url: str, region_name: str) -> None:
-        import boto3
+        import boto3  # type: ignore[import-untyped]
 
         self.queue_url = queue_url
         self.client = boto3.client("sqs", region_name=region_name)
