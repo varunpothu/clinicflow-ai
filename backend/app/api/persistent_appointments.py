@@ -3,7 +3,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.appointment import Appointment
 
 from app.core.correlation import get_correlation_id
 from app.db.dependencies import get_session
@@ -26,12 +29,34 @@ def assert_patient_access(principal: Principal, patient_id: UUID) -> None:
         raise HTTPException(status_code=403, detail="FORBIDDEN")
 
 
+@router.get("/me")
+async def list_my_appointments(
+    principal: Principal = Depends(require_demo_permission(Permission.VIEW_OWN_APPOINTMENTS)),
+    session: AsyncSession = Depends(get_session),
+) -> list[dict[str, object]]:
+    result = await session.execute(
+        select(Appointment).where(Appointment.patient_id == principal.subject_id).order_by(Appointment.starts_at)
+    )
+    return [
+        {
+            "appointment_id": str(item.id),
+            "clinician_id": str(item.clinician_id),
+            "appointment_type": item.appointment_type,
+            "starts_at": item.starts_at.isoformat(),
+            "ends_at": item.ends_at.isoformat(),
+            "status": item.status,
+            "version": item.version,
+        }
+        for item in result.scalars().all()
+    ]
+
+
 @router.post("/{appointment_id}/cancel")
 async def cancel_appointment(
     appointment_id: UUID,
     idempotency_key: str = Header(min_length=8, max_length=200),
     principal: Principal = Depends(
-        require_demo_permission(Permission.VIEW_OWN_APPOINTMENTS)
+        require_demo_permission(Permission.CANCEL_OWN_APPOINTMENT)
     ),
     session: AsyncSession = Depends(get_session),
 ) -> dict[str, object]:
@@ -57,7 +82,7 @@ async def reschedule_appointment(
     command: RescheduleCommand,
     idempotency_key: str = Header(min_length=8, max_length=200),
     principal: Principal = Depends(
-        require_demo_permission(Permission.MODIFY_PROPOSAL)
+        require_demo_permission(Permission.RESCHEDULE_OWN_APPOINTMENT)
     ),
     session: AsyncSession = Depends(get_session),
 ) -> dict[str, object]:
