@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, String, Text
+from sqlalchemy import DateTime, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -8,6 +8,13 @@ from app.db.base import Base
 
 class WorkflowEvent(Base):
     __tablename__ = "workflow_events"
+    __table_args__ = (
+        UniqueConstraint(
+            "workflow_id",
+            "sequence_number",
+            name="uq_workflow_event_sequence",
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     workflow_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
