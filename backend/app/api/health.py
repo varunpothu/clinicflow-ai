@@ -1,4 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.db.dependencies import get_session
 
 router = APIRouter(prefix="/health", tags=["health"])
 
@@ -9,6 +13,6 @@ def liveness() -> dict[str, str]:
 
 
 @router.get("/ready")
-def readiness() -> dict[str, str]:
-    # Dependency probes will be added before cloud deployment.
+async def readiness(session: AsyncSession = Depends(get_session)) -> dict[str, str]:
+    await session.execute(text("SELECT 1"))
     return {"status": "ready"}
