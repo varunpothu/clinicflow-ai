@@ -10,6 +10,7 @@ from app.models.operational_exception import OperationalExceptionRecord
 from app.models.outbox import OutboxEvent
 from app.models.patient import Patient
 from app.models.proposal import Proposal
+from app.models.waitlist import WaitlistEntry
 from app.models.workflow import WorkflowRun
 from app.models.workflow_event import WorkflowEvent
 
@@ -26,6 +27,7 @@ __all__ = [
     "OutboxEvent",
     "Patient",
     "Proposal",
+    "WaitlistEntry",
     "WorkflowRun",
     "WorkflowEvent",
 ]
