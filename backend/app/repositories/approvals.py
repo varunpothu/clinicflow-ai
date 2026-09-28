@@ -24,6 +24,14 @@ class ApprovalRepository:
         await self.session.flush()
         return approval
 
+    async def get_for_proposal(self, proposal_id: UUID) -> Approval | None:
+        result = await self.session.execute(
+            select(Approval)
+            .where(Approval.proposal_id == proposal_id)
+            .order_by(Approval.id)
+        )
+        return result.scalars().first()
+
     async def decide(
         self,
         *,
