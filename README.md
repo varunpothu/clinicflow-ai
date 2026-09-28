@@ -85,7 +85,7 @@ The project deliberately separates probabilistic AI behaviour from deterministic
 
 ## 📚 Documentation-first delivery
 
-The first implementation milestone establishes the customer contract and operating model before deep application code. Later milestones add the runnable booking engine, AI adapters, staff console, integration sandbox, Terraform, and production hardening.
+The repository now contains the runnable booking engine, staff console, AI gateway, persistence/migration layer, operational control plane, integration sandbox, and Terraform foundation. Remaining work is production AWS hardening, complete persistence-backed APIs, observability, analytics, and deployment promotion.
 
 ## ⚠️ Disclaimer
 
