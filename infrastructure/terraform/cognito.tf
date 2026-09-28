@@ -13,6 +13,26 @@ resource "aws_cognito_user_pool" "clinic" {
   }
 
   username_attributes = ["email"]
+  user_pool_tier      = "ESSENTIALS"
+
+  schema {
+    name                     = "clinic_id"
+    attribute_data_type      = "String"
+    developer_only_attribute = false
+    mutable                  = false
+    required                 = false
+    string_attribute_constraints {
+      min_length = 2
+      max_length = 100
+    }
+  }
+
+  lambda_config {
+    pre_token_generation_config {
+      lambda_arn     = aws_lambda_function.pre_token_generation.arn
+      lambda_version = "V2_0"
+    }
+  }
 }
 
 resource "aws_cognito_user_group" "patient" {
