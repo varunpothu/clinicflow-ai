@@ -6,14 +6,20 @@ class AppointmentLifecycleError(ValueError):
     pass
 
 
+def _next_version(appointment: dict[str, object]) -> int:
+    version = appointment.get("version", 1)
+    if not isinstance(version, int):
+        raise AppointmentLifecycleError("INVALID_VERSION")
+    return version + 1
+
+
 def cancel_appointment(appointment: dict[str, object], *, actor_id: UUID) -> dict[str, object]:
-    status = appointment.get("status")
-    if status != "CONFIRMED":
+    if appointment.get("status") != "CONFIRMED":
         raise AppointmentLifecycleError("APPOINTMENT_NOT_ACTIVE")
 
     updated = dict(appointment)
     updated["status"] = "CANCELLED"
-    updated["version"] = int(updated.get("version", 1)) + 1
+    updated["version"] = _next_version(appointment)
     updated["cancelled_by"] = str(actor_id)
     updated["cancelled_at"] = datetime.now(UTC).isoformat()
     return updated
@@ -27,12 +33,14 @@ def reschedule_appointment(
 ) -> dict[str, object]:
     if appointment.get("status") != "CONFIRMED":
         raise AppointmentLifecycleError("APPOINTMENT_NOT_ACTIVE")
+    if new_starts_at.tzinfo is None or new_ends_at.tzinfo is None:
+        raise AppointmentLifecycleError("TIMEZONE_REQUIRED")
     if new_ends_at <= new_starts_at:
         raise AppointmentLifecycleError("INVALID_RESCHEDULE_RANGE")
 
     updated = dict(appointment)
-    updated["starts_at"] = new_starts_at.isoformat()
-    updated["ends_at"] = new_ends_at.isoformat()
-    updated["version"] = int(updated.get("version", 1)) + 1
+    updated["starts_at"] = new_starts_at.astimezone(UTC).isoformat()
+    updated["ends_at"] = new_ends_at.astimezone(UTC).isoformat()
+    updated["version"] = _next_version(appointment)
     updated["status"] = "CONFIRMED"
     return updated
