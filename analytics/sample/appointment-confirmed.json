@@ -1,0 +1,12 @@
+{
+  "event_id": "evt-1001",
+  "event_type": "APPOINTMENT_CONFIRMED",
+  "occurred_at": "2026-09-28T16:30:00Z",
+  "correlation_id": "corr-1001",
+  "appointment_id": "apt-1001",
+  "clinician_id": "clinician-001",
+  "appointment_type": "routine_consultation",
+  "status": "CONFIRMED",
+  "workflow_id": "wf-1001",
+  "actor_type": "RECEPTIONIST"
+}
