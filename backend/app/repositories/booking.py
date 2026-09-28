@@ -1,3 +1,4 @@
+import json
 from datetime import UTC, datetime
 from uuid import UUID
 
@@ -28,6 +29,7 @@ class AtomicBookingService:
         self,
         *,
         proposal_id: UUID,
+        approval_id: UUID,
         proposal_version: int,
         actor_id: UUID,
         idempotency_key: str,
@@ -47,7 +49,7 @@ class AtomicBookingService:
 
             existing = await self.idempotency.get(idempotency_key)
             if existing is not None:
-                if existing.fingerprint != self._fingerprint(proposal, idempotency_key):
+                if existing.fingerprint != self._fingerprint(proposal):
                     raise ValueError("IDEMPOTENCY_KEY_REUSE")
                 return json.loads(existing.result_json)
 
@@ -59,13 +61,11 @@ class AtomicBookingService:
                     starts_at=proposal.starts_at,
                     ends_at=proposal.ends_at,
                 )
-            except AppointmentConflictError:
-                raise ValueError("APPOINTMENT_CONFLICT") from None
-            except IntegrityError:
+            except (AppointmentConflictError, IntegrityError):
                 raise ValueError("APPOINTMENT_CONFLICT") from None
 
             approval_result = await self.approvals.decide(
-                approval_id=UUID(idempotency_key.split(":")[0]) if ":" in idempotency_key else UUID(int=0),
+                approval_id=approval_id,
                 expected_version=proposal_version,
                 approver_id=actor_id,
                 decision="APPROVED",
@@ -78,7 +78,10 @@ class AtomicBookingService:
                 correlation_id=correlation_id,
                 actor_id=actor_id,
                 entity_id=appointment.id,
-                metadata={"proposal_id": proposal_id.hex, "approval_id": str(approval_result.id)},
+                metadata={
+                    "proposal_id": proposal_id.hex,
+                    "approval_id": str(approval_result.id),
+                },
                 occurred_at=current_time,
             )
             await self.outbox.add(
@@ -99,14 +102,15 @@ class AtomicBookingService:
             }
             await self.idempotency.put(
                 idempotency_key,
-                self._fingerprint(proposal, idempotency_key),
+                self._fingerprint(proposal),
                 result,
             )
             return result
 
     @staticmethod
-    def _fingerprint(proposal: object, idempotency_key: str) -> str:
+    def _fingerprint(proposal: object) -> str:
         proposal_id = getattr(proposal, "id", "")
         version = getattr(proposal, "version", "")
         starts_at = getattr(proposal, "starts_at", "")
-        return f"{idempotency_key}:{proposal_id}:{version}:{starts_at}"
+        clinician_id = getattr(proposal, "clinician_id", "")
+        return f"{proposal_id}:{version}:{clinician_id}:{starts_at}"
