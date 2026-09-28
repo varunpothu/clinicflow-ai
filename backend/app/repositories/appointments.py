@@ -2,9 +2,14 @@ from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.appointment import Appointment
+
+
+class AppointmentConflictError(Exception):
+    """Raised when database constraints reject an appointment write."""
 
 
 class AppointmentRepository:
@@ -36,5 +41,8 @@ class AppointmentRepository:
             status=status,
         )
         self.session.add(appointment)
-        await self.session.flush()
+        try:
+            await self.session.flush()
+        except IntegrityError as exc:
+            raise AppointmentConflictError("APPOINTMENT_CONFLICT") from exc
         return appointment
