@@ -1,0 +1,118 @@
+{
+  "Comment": "ClinicFlow AI durable appointment workflow with human approval",
+  "StartAt": "Received",
+  "States": {
+    "Received": {
+      "Type": "Pass",
+      "ResultPath": "$.workflow",
+      "Next": "ValidateRequest"
+    },
+    "ValidateRequest": {
+      "Type": "Task",
+      "Comment": "Application task: validate the request and enrich workflow context.",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Arguments": {
+        "FunctionName": "clinicflow-validate-request",
+        "Payload.$": "$"
+      },
+      "OutputPath": "$.Payload",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "IntervalSeconds": 2,
+          "BackoffRate": 2,
+          "MaxAttempts": 3
+        }
+      ],
+      "Next": "CreateProposal"
+    },
+    "CreateProposal": {
+      "Type": "Task",
+      "Comment": "Application task: create a server-owned proposal.",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Arguments": {
+        "FunctionName": "clinicflow-create-proposal",
+        "Payload.$": "$"
+      },
+      "OutputPath": "$.Payload",
+      "Next": "HumanApproval"
+    },
+    "HumanApproval": {
+      "Type": "Task",
+      "Comment": "Wait for an authorised human decision using a task token.",
+      "Resource": "arn:aws:states:::sqs:sendMessage.waitForTaskToken",
+      "Arguments": {
+        "QueueUrl": "APPROVAL_QUEUE_URL",
+        "MessageBody": {
+          "workflow_id.$": "$.workflow_id",
+          "proposal_id.$": "$.proposal_id",
+          "proposal_version.$": "$.proposal_version",
+          "task_token.$": "$$.Task.Token"
+        }
+      },
+      "TimeoutSeconds": 900,
+      "Catch": [
+        {
+          "ErrorEquals": ["States.Timeout"],
+          "Next": "ApprovalExpired"
+        }
+      ],
+      "Next": "FinalRevalidation"
+    },
+    "ApprovalExpired": {
+      "Type": "Fail",
+      "Error": "APPROVAL_EXPIRED",
+      "Cause": "Human approval window elapsed."
+    },
+    "FinalRevalidation": {
+      "Type": "Task",
+      "Comment": "Application task: re-check availability immediately before booking.",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Arguments": {
+        "FunctionName": "clinicflow-final-revalidation",
+        "Payload.$": "$"
+      },
+      "OutputPath": "$.Payload",
+      "Catch": [
+        {
+          "ErrorEquals": ["BOOKING_CONFLICT"],
+          "Next": "Conflict"
+        }
+      ],
+      "Next": "Book"
+    },
+    "Conflict": {
+      "Type": "Task",
+      "Comment": "Create a replacement proposal after a stale slot conflict.",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Arguments": {
+        "FunctionName": "clinicflow-regenerate-proposal",
+        "Payload.$": "$"
+      },
+      "OutputPath": "$.Payload",
+      "Next": "HumanApproval"
+    },
+    "Book": {
+      "Type": "Task",
+      "Comment": "Application task: transactional booking + audit + outbox.",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Arguments": {
+        "FunctionName": "clinicflow-book-appointment",
+        "Payload.$": "$"
+      },
+      "OutputPath": "$.Payload",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "IntervalSeconds": 2,
+          "BackoffRate": 2,
+          "MaxAttempts": 3
+        }
+      ],
+      "Next": "Confirmed"
+    },
+    "Confirmed": {
+      "Type": "Succeed"
+    }
+  }
+}
