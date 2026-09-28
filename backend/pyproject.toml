@@ -15,6 +15,7 @@ dependencies = [
   "sqlalchemy>=2.0,<3",
   "aiosqlite>=0.20,<1",
   "structlog>=24.4,<26",
+  "boto3>=1.43,<2",
 ]
 
 [project.optional-dependencies]
