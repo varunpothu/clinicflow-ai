@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.audit_event import AuditEvent
+from app.models.audit import AuditEventRecord
 
 
 class AuditRepository:
@@ -22,8 +22,8 @@ class AuditRepository:
         entity_id: UUID | None = None,
         metadata: dict[str, str] | None = None,
         occurred_at: datetime,
-    ) -> AuditEvent:
-        event = AuditEvent(
+    ) -> AuditEventRecord:
+        event = AuditEventRecord(
             id=str(uuid4()),
             event_type=event_type,
             actor_id=str(actor_id) if actor_id else None,
