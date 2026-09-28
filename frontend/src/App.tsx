@@ -36,6 +36,10 @@ export default function App() {
     !productionAuthEnabled || isAuthenticated(),
   );
   const [authError, setAuthError] = useState("");
+  const [active, setActive] = useState("Overview");
+  const [approvals, setApprovals] = useState(initialApprovals);
+  const [toast, setToast] = useState("");
+  const pending = useMemo(() => approvals.filter((item) => item.status === "PENDING").length, [approvals]);
 
   useEffect(() => {
     if (!productionAuthEnabled || window.location.pathname !== "/auth/callback") return;
@@ -56,11 +60,6 @@ export default function App() {
   if (productionAuthEnabled && !authenticated) {
     return <Login />;
   }
-
-  const [active, setActive] = useState("Overview");
-  const [approvals, setApprovals] = useState(initialApprovals);
-  const [toast, setToast] = useState("");
-  const pending = useMemo(() => approvals.filter((item) => item.status === "PENDING").length, [approvals]);
 
   const actOnApproval = (id: string, action: "approve" | "reject") => {
     setApprovals((current) => current.filter((item) => item.id !== id));
