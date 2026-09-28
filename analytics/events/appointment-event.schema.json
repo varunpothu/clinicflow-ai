@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ClinicFlowAppointmentEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "occurred_at",
+    "correlation_id",
+    "appointment_id"
+  ],
+  "properties": {
+    "event_id": {"type": "string"},
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "APPOINTMENT_CONFIRMED",
+        "APPOINTMENT_CANCELLED",
+        "APPOINTMENT_RESCHEDULED",
+        "BOOKING_CONFLICT"
+      ]
+    },
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "correlation_id": {"type": "string"},
+    "appointment_id": {"type": "string"},
+    "clinician_id": {"type": ["string", "null"]},
+    "appointment_type": {"type": ["string", "null"]},
+    "status": {"type": ["string", "null"]},
+    "workflow_id": {"type": ["string", "null"]},
+    "actor_type": {"type": ["string", "null"]}
+  }
+}
