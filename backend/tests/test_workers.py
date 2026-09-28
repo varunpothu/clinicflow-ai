@@ -1,7 +1,7 @@
 import json
 
 from app.services.notifications import ConsoleNotificationGateway, NotificationWorker
-from workers.notifications.sqs_consumer import SQSNotificationConsumer
+from app.workers.sqs_consumer import SQSNotificationConsumer
 
 
 class FakeSQS:
