@@ -122,3 +122,37 @@ def approve_proposal(
         proposal_id=proposal_id,
         proposal_version=result["proposal_version"],
     )
+
+
+class RescheduleRequest(BaseModel):
+    new_starts_at: datetime
+    new_ends_at: datetime
+
+
+@router.post("/appointments/{appointment_id}/cancel")
+def cancel_appointment(appointment_id: str, actor_id: UUID) -> dict[str, object]:
+    from app.services.lifecycle import AppointmentLifecycleService
+
+    service = AppointmentLifecycleService(booking.store)
+    try:
+        return service.cancel(appointment_id, actor_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@router.post("/appointments/{appointment_id}/reschedule")
+def reschedule_appointment(
+    appointment_id: str,
+    request: RescheduleRequest,
+) -> dict[str, object]:
+    from app.services.lifecycle import AppointmentLifecycleService
+
+    service = AppointmentLifecycleService(booking.store)
+    try:
+        return service.reschedule(
+            appointment_id,
+            new_starts_at=request.new_starts_at,
+            new_ends_at=request.new_ends_at,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
