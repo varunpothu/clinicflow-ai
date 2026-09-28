@@ -9,7 +9,7 @@ class CognitoClaimsError(ValueError):
 
 
 class CognitoClaimsMapper:
-    """Maps claims verified by the edge/JWT authorizer into the app principal."""
+    """Map claims already validated by API Gateway into the app principal."""
 
     @staticmethod
     def to_principal(claims: dict[str, object]) -> Principal:
@@ -32,10 +32,16 @@ class CognitoClaimsMapper:
 
     @staticmethod
     def _map_role(groups: object) -> Role:
-        values = groups if isinstance(groups, list) else []
+        if isinstance(groups, str):
+            values = [value.strip() for value in groups.split(",") if value.strip()]
+        elif isinstance(groups, list):
+            values = [str(value) for value in groups]
+        else:
+            values = []
+
         for candidate in values:
             try:
-                role = Role(str(candidate))
+                role = Role(candidate)
                 if role != Role.SYSTEM:
                     return role
             except ValueError:
