@@ -1,14 +1,9 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.appointment import Appointment
-
-
-class AppointmentConflictError(Exception):
-    pass
 
 
 class AppointmentRepository:
@@ -34,9 +29,5 @@ class AppointmentRepository:
             status=status,
         )
         self.session.add(appointment)
-        try:
-            await self.session.flush()
-        except IntegrityError as exc:
-            await self.session.rollback()
-            raise AppointmentConflictError("APPOINTMENT_CONFLICT") from exc
+        await self.session.flush()
         return appointment
