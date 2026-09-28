@@ -1,15 +1,7 @@
 resource "aws_security_group" "alb" {
   name        = "${local.name_prefix}-alb"
-  description = "Public HTTP access to the ClinicFlow load balancer."
+  description = "Internal traffic from the API Gateway VPC Link only."
   vpc_id      = aws_vpc.main.id
-
-  ingress {
-    description = "HTTP demo access"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 
   egress {
     description = "Outbound traffic"
