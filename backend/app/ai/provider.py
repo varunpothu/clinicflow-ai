@@ -27,12 +27,33 @@ class MockAIProvider:
 
     def extract_intent(self, text: str) -> ExtractedIntent:
         normalized = validate_user_text(text)
+        lowered = normalized.lower()
+        if "cancel" in lowered:
+            intent = "CANCEL_APPOINTMENT"
+            clarification = False
+        elif "reschedule" in lowered or "move my appointment" in lowered:
+            intent = "RESCHEDULE_APPOINTMENT"
+            clarification = False
+        elif any(token in lowered for token in ("book", "appointment", "see dr", "consultation")):
+            intent = "BOOK_APPOINTMENT"
+            clarification = "soon" in lowered and not any(
+                token in lowered for token in ("monday", "tuesday", "wednesday", "thursday", "friday", "morning", "afternoon", "evening", "pm", "am")
+            )
+        else:
+            intent = "UNKNOWN"
+            clarification = True
+
+        question = (
+            "What day or time window would you prefer?"
+            if clarification
+            else None
+        )
         return ExtractedIntent(
-            appointment_type="routine_consultation",
-            preferred_time_text=normalized,
-            clarification_required=False,
-            clarification_question=None,
-            rationale="Deterministic local fixture used for development and tests.",
+            appointment_type="routine_consultation" if intent == "BOOK_APPOINTMENT" else None,
+            preferred_time_text=normalized if intent != "UNKNOWN" else None,
+            clarification_required=clarification,
+            clarification_question=question,
+            rationale="Deterministic local fixture for repeatable development and evaluation.",
         )
 
 
