@@ -6,12 +6,16 @@ from pydantic import BaseModel, Field
 
 from app.domain.availability import AvailabilityEngine
 from app.domain.proposal import AppointmentProposal
+from app.services.approval import ApprovalService
 from app.services.booking import BookingConflict, BookingService
+from app.services.proposal_store import ProposalStore
 
 router = APIRouter(prefix="/booking", tags=["booking"])
 
 availability = AvailabilityEngine()
+proposals = ProposalStore()
 booking = BookingService()
+approval = ApprovalService(proposals=proposals, booking=booking)
 
 
 class AvailabilityResponse(BaseModel):
@@ -43,7 +47,6 @@ class ProposalResponse(BaseModel):
 
 
 class ApprovalRequest(BaseModel):
-    patient_id: UUID
     proposal_version: int = Field(ge=1)
 
 
@@ -79,6 +82,7 @@ def create_proposal(payload: ProposalCreate) -> ProposalResponse:
         expires_at=datetime.now(UTC) + timedelta(minutes=10),
         rationale="Candidate slot selected by deterministic availability rules.",
     )
+    proposals.save(proposal, payload.patient_id)
     return ProposalResponse(
         proposal_id=proposal.proposal_id,
         request_id=proposal.request_id,
@@ -96,43 +100,25 @@ def create_proposal(payload: ProposalCreate) -> ProposalResponse:
 @router.post("/proposals/{proposal_id}/approve", response_model=ApprovalResponse)
 def approve_proposal(
     proposal_id: UUID,
-    proposal: ProposalResponse,
-    approval: ApprovalRequest,
+    approval_request: ApprovalRequest,
     actor_id: UUID,
     idempotency_key: str = Header(min_length=8, max_length=200),
 ) -> ApprovalResponse:
-    if proposal.proposal_id != proposal_id:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="PROPOSAL_MISMATCH")
-    if approval.proposal_version != proposal.version:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="STALE_PROPOSAL")
-    if approval.patient_id != proposal.patient_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="PATIENT_MISMATCH")
-
-    domain_proposal = AppointmentProposal(
-        proposal_id=proposal.proposal_id,
-        request_id=proposal.request_id,
-        clinician_id=proposal.clinician_id,
-        appointment_type=proposal.appointment_type,
-        starts_at=proposal.starts_at,
-        ends_at=proposal.ends_at,
-        version=proposal.version,
-        expires_at=proposal.expires_at,
-        rationale=proposal.rationale,
-    )
     try:
-        result = booking.approve_and_book(
-            idempotency_key=idempotency_key,
-            patient_id=approval.patient_id,
-            proposal=domain_proposal,
+        result = approval.approve(
+            proposal_id=proposal_id,
+            proposal_version=approval_request.proposal_version,
             actor_id=actor_id,
+            idempotency_key=idempotency_key,
         )
     except BookingConflict as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
+
     return ApprovalResponse(
         appointment=result["appointment"],
         approved_by=actor_id,
         proposal_id=proposal_id,
-        proposal_version=proposal.version,
+        proposal_version=result["proposal_version"],
     )
