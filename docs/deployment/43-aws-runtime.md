@@ -2,7 +2,7 @@
 
 ## Network
 
-Public subnets contain the internet-facing ALB and NAT gateway. Private subnets contain ECS tasks and RDS PostgreSQL.
+Public subnets contain the NAT gateway. The ALB is internal and receives traffic through API Gateway VPC Link. Private subnets contain ECS tasks and RDS PostgreSQL.
 
 ## Security
 
