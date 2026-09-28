@@ -25,7 +25,7 @@ class DemoStore:
         if key in self.blocked_slots:
             raise ValueError("BOOKING_CONFLICT")
         self.blocked_slots.add(key)
-        appointment = {
+        appointment: dict[str, object] = {
             "appointment_id": appointment_id,
             "patient_id": str(patient_id),
             "clinician_id": str(clinician_id),
