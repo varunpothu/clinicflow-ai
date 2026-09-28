@@ -47,7 +47,7 @@ resource "aws_apigatewayv2_integration" "alb" {
 
   request_parameters = {
     "overwrite:header.X-Principal-Subject" = "$context.authorizer.claims.sub"
-    "overwrite:header.X-Principal-Clinic"  = "$context.authorizer.claims.custom:clinic_id"
+    "overwrite:header.X-Principal-Clinic"  = "$context.authorizer.claims.clinic_id"
     "overwrite:header.X-Principal-Groups"  = "$context.authorizer.claims.cognito:groups"
     "overwrite:header.X-Correlation-ID"    = "$context.requestId"
   }
