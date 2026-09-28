@@ -15,25 +15,25 @@ resource "aws_cognito_user_pool" "clinic" {
   username_attributes = ["email"]
 }
 
-resource "aws_cognito_user_pool_group" "patient" {
+resource "aws_cognito_user_group" "patient" {
   name         = "PATIENT"
   user_pool_id = aws_cognito_user_pool.clinic.id
   precedence   = 50
 }
 
-resource "aws_cognito_user_pool_group" "receptionist" {
+resource "aws_cognito_user_group" "receptionist" {
   name         = "RECEPTIONIST"
   user_pool_id = aws_cognito_user_pool.clinic.id
   precedence   = 20
 }
 
-resource "aws_cognito_user_pool_group" "clinician" {
+resource "aws_cognito_user_group" "clinician" {
   name         = "CLINICIAN"
   user_pool_id = aws_cognito_user_pool.clinic.id
   precedence   = 30
 }
 
-resource "aws_cognito_user_pool_group" "admin" {
+resource "aws_cognito_user_group" "admin" {
   name         = "ADMIN"
   user_pool_id = aws_cognito_user_pool.clinic.id
   precedence   = 10
