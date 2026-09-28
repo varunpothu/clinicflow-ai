@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 from app.domain.appointment_request import AppointmentRequest
@@ -8,7 +8,7 @@ from app.workflows.transitions import can_transition
 
 
 def test_valid_request() -> None:
-    start = datetime.now(timezone.utc) + timedelta(days=1)
+    start = datetime.now(UTC) + timedelta(days=1)
     request = AppointmentRequest(
         request_id=uuid4(), patient_id=uuid4(), appointment_type="routine", preferred_start=start
     )
@@ -16,7 +16,7 @@ def test_valid_request() -> None:
 
 
 def test_invalid_time_range() -> None:
-    start = datetime.now(timezone.utc) + timedelta(days=1)
+    start = datetime.now(UTC) + timedelta(days=1)
     request = AppointmentRequest(
         request_id=uuid4(), patient_id=uuid4(), appointment_type="routine",
         preferred_start=start, preferred_end=start - timedelta(minutes=1)
