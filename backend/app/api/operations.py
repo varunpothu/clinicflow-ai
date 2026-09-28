@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
-from app.security.dependencies import get_demo_principal, require_demo_permission
-from app.security.rbac import Permission, Role
+from app.security.dependencies import require_demo_permission
+from app.security.rbac import Permission
 from app.security.auth import Principal
 from app.services.audit import AuditLog
 from app.services.exceptions import ExceptionQueue
