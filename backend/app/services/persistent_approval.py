@@ -2,7 +2,6 @@ from datetime import UTC, datetime
 import json
 from uuid import UUID
 
-from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
