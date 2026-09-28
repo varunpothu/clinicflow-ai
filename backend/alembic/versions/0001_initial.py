@@ -189,6 +189,22 @@ def upgrade() -> None:
     op.create_index("ix_notifications_status", "notifications", ["status"])
 
     op.create_table(
+        "waitlist_entries",
+        sa.Column("id", sa.String(36), primary_key=True),
+        sa.Column("patient_id", sa.String(36), nullable=False),
+        sa.Column("appointment_type", sa.String(100), nullable=False),
+        sa.Column("preferred_clinician_id", sa.String(36), nullable=True),
+        sa.Column("earliest", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("latest", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("status", sa.String(30), nullable=False, server_default="ACTIVE"),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+    )
+    op.create_index("ix_waitlist_entries_patient_id", "waitlist_entries", ["patient_id"])
+    op.create_index("ix_waitlist_entries_appointment_type", "waitlist_entries", ["appointment_type"])
+    op.create_index("ix_waitlist_entries_preferred_clinician_id", "waitlist_entries", ["preferred_clinician_id"])
+    op.create_index("ix_waitlist_entries_status", "waitlist_entries", ["status"])
+
+    op.create_table(
         "outbox_events",
         sa.Column("id", sa.String(36), primary_key=True),
         sa.Column("aggregate_id", sa.String(36), nullable=False),
@@ -208,6 +224,7 @@ def downgrade() -> None:
     op.drop_table("workflow_events")
     op.drop_table("proposals")
     op.drop_table("appointment_requests")
+    op.drop_table("waitlist_entries")
     op.drop_table("outbox_events")
     op.drop_table("approvals")
     op.drop_table("workflow_runs")
