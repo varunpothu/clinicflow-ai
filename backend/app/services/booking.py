@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import TypedDict
 from uuid import UUID, uuid4
 
 from app.domain.idempotency import IdempotencyStore
@@ -8,6 +9,13 @@ from app.services.demo_store import DemoStore
 
 class BookingConflict(Exception):
     pass
+
+
+class BookingResult(TypedDict):
+    appointment: dict[str, object]
+    approved_by: str
+    proposal_id: str
+    proposal_version: int
 
 
 class BookingService:
@@ -27,7 +35,7 @@ class BookingService:
         proposal: AppointmentProposal,
         actor_id: UUID,
         now: datetime | None = None,
-    ) -> dict[str, object]:
+    ) -> BookingResult:
         current_time = now or datetime.now(UTC)
         fingerprint = (
             f"{proposal.proposal_id}:{proposal.version}:{proposal.clinician_id}:"
@@ -42,7 +50,6 @@ class BookingService:
         if current_time >= proposal.expires_at:
             raise ValueError("PROPOSAL_EXPIRED")
 
-        # Final availability check happens after approval and immediately before the write.
         if not self.store.slot_is_available(proposal.clinician_id, proposal.starts_at):
             raise BookingConflict("BOOKING_CONFLICT")
 
@@ -54,7 +61,7 @@ class BookingService:
             patient_id=patient_id,
             appointment_type=proposal.appointment_type,
         )
-        result = {
+        result: BookingResult = {
             "appointment": appointment,
             "approved_by": str(actor_id),
             "proposal_id": str(proposal.proposal_id),
