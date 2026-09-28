@@ -11,7 +11,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
       - name: Build backend image
-        run: docker build -f backend/Dockerfile -t clinicflow-ai-backend:ci .
+        run: docker build -f Dockerfile -t clinicflow-ai-backend:ci backend
+
       - name: Build frontend image
-        run: docker build -f frontend/Dockerfile -t clinicflow-ai-frontend:ci .
+        run: docker build -f Dockerfile -t clinicflow-ai-frontend:ci frontend
