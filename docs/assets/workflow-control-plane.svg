@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760">
+<defs>
+  <linearGradient id="g1" x1="0" x2="1"><stop stop-color="#2563eb"/><stop offset="1" stop-color="#7c3aed"/></linearGradient>
+  <linearGradient id="g2" x1="0" x2="1"><stop stop-color="#06b6d4"/><stop offset="1" stop-color="#10b981"/></linearGradient>
+  <linearGradient id="g3" x1="0" x2="1"><stop stop-color="#f59e0b"/><stop offset="1" stop-color="#f97316"/></linearGradient>
+  <linearGradient id="g4" x1="0" x2="1"><stop stop-color="#ec4899"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#475569"/></marker>
+</defs>
+<rect width="1400" height="760" rx="32" fill="#f8fafc"/>
+<text x="70" y="70" font-family="Arial, sans-serif" font-size="38" font-weight="700" fill="#0f172a">ClinicFlow AI • Appointment Orchestration</text>
+<text x="70" y="108" font-family="Arial, sans-serif" font-size="19" fill="#475569">AI proposes → rules validate → human approves → system executes → everything important is auditable</text>
+
+<g font-family="Arial, sans-serif">
+<rect x="70" y="160" width="240" height="150" rx="24" fill="#dbeafe" stroke="#2563eb" stroke-width="3"/>
+<circle cx="115" cy="205" r="24" fill="#2563eb"/><text x="107" y="214" font-size="22" fill="white">1</text>
+<text x="155" y="207" font-size="22" font-weight="700" fill="#1e3a8a">Patient request</text>
+<text x="95" y="245" font-size="17" fill="#334155">Natural language</text><text x="95" y="270" font-size="17" fill="#334155">or structured booking</text>
+
+<rect x="385" y="160" width="240" height="150" rx="24" fill="#ede9fe" stroke="#7c3aed" stroke-width="3"/>
+<circle cx="430" cy="205" r="24" fill="#7c3aed"/><text x="422" y="214" font-size="22" fill="white">2</text>
+<text x="470" y="207" font-size="22" font-weight="700" fill="#5b21b6">AI gateway</text>
+<text x="410" y="245" font-size="17" fill="#334155">Intent extraction</text><text x="410" y="270" font-size="17" fill="#334155">strict JSON schema</text>
+
+<rect x="700" y="160" width="240" height="150" rx="24" fill="#ccfbf1" stroke="#0f766e" stroke-width="3"/>
+<circle cx="745" cy="205" r="24" fill="#0f766e"/><text x="737" y="214" font-size="22" fill="white">3</text>
+<text x="785" y="207" font-size="22" font-weight="700" fill="#115e59">Deterministic rules</text>
+<text x="725" y="245" font-size="17" fill="#334155">Validation + availability</text><text x="725" y="270" font-size="17" fill="#334155">no model write access</text>
+
+<rect x="1015" y="160" width="315" height="150" rx="24" fill="#ffedd5" stroke="#f97316" stroke-width="3"/>
+<circle cx="1060" cy="205" r="24" fill="#f97316"/><text x="1052" y="214" font-size="22" fill="white">4</text>
+<text x="1100" y="207" font-size="22" font-weight="700" fill="#9a3412">Human approval</text>
+<text x="1040" y="245" font-size="17" fill="#334155">Approve • reject • modify</text><text x="1040" y="270" font-size="17" fill="#334155">proposal version checked</text>
+
+<path d="M310 235 L385 235" stroke="#475569" stroke-width="5" marker-end="url(#arrow)"/>
+<path d="M625 235 L700 235" stroke="#475569" stroke-width="5" marker-end="url(#arrow)"/>
+<path d="M940 235 L1015 235" stroke="#475569" stroke-width="5" marker-end="url(#arrow)"/>
+
+<rect x="160" y="390" width="280" height="180" rx="26" fill="url(#g1)"/>
+<text x="195" y="440" font-size="24" font-weight="700" fill="white">5. Final revalidation</text>
+<text x="195" y="478" font-size="17" fill="white">Check slot immediately</text><text x="195" y="504" font-size="17" fill="white">before the booking write.</text>
+<text x="195" y="545" font-size="17" fill="#dbeafe">Protects against stale approval</text>
+
+<rect x="560" y="390" width="280" height="180" rx="26" fill="url(#g2)"/>
+<text x="595" y="440" font-size="24" font-weight="700" fill="white">6. Transaction</text>
+<text x="595" y="478" font-size="17" fill="white">Create appointment and</text><text x="595" y="504" font-size="17" fill="white">audit/outbox event together.</text>
+<text x="595" y="545" font-size="17" fill="#ccfbf1">Idempotent side effects</text>
+
+<rect x="960" y="390" width="280" height="180" rx="26" fill="url(#g4)"/>
+<text x="995" y="440" font-size="24" font-weight="700" fill="white">7. Async operations</text>
+<text x="995" y="478" font-size="17" fill="white">Notifications • analytics</text><text x="995" y="504" font-size="17" fill="white">retries • DLQ • events</text>
+<text x="995" y="545" font-size="17" fill="#f3e8ff">Observable and replayable</text>
+
+<path d="M1170 310 C1170 350 1100 360 1100 390" fill="none" stroke="#475569" stroke-width="5" marker-end="url(#arrow)"/>
+<path d="M1015 525 C945 525 900 525 840 525" fill="none" stroke="#475569" stroke-width="5" marker-end="url(#arrow)"/>
+<path d="M560 525 C500 525 470 525 440 525" fill="none" stroke="#475569" stroke-width="5" marker-end="url(#arrow)"/>
+
+<rect x="90" y="640" width="1220" height="70" rx="18" fill="#0f172a"/>
+<text x="125" y="684" font-size="19" font-weight="700" fill="white">Safety boundary</text>
+<text x="300" y="684" font-size="18" fill="#cbd5e1">AI can interpret and propose; only deterministic services and authorised humans can cause controlled booking side effects.</text>
+</g>
+</svg>
