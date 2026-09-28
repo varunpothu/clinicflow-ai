@@ -93,6 +93,21 @@ Updated: 2026-09-28
 
 Production-shaped local workflow + AI gateway + persistent relational design + HITL control plane + customer integration boundary.
 
+## Newly added in current build
+
+- production VPC and private RDS design
+- internal ALB behind API Gateway JWT authorizer
+- Cognito role groups and immutable GitHub OIDC deployment trust
+- ECS/Fargate task definition and ECR repository
+- PostgreSQL component-based secret configuration
+- persistent appointment cancellation and rescheduling
+- patient-scoped appointment API
+- application metrics registry
+- Glue/Athena analytics data product foundation
+- durable Step Functions HITL definition
+- external scheduling-system idempotency/conflict adapter
+- FDE customer rollout and support model
+
 ## Next implementation
 
 1. Replace remaining in-memory demo stores with repository-backed APIs.
