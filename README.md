@@ -90,3 +90,21 @@ The repository now contains the runnable booking engine, staff console, AI gatew
 ## ⚠️ Disclaimer
 
 This is a portfolio engineering project using fictional entities and synthetic data. It is not an NHS or healthcare-provider production system and must not be connected to real patient data without a full security, privacy, clinical-safety, compliance, and governance programme.
+
+## Current implementation status
+
+The repository now includes the colourful staff console and patient request experience, AI gateway and Bedrock adapter, guarded intent extraction, persistent request/proposal/approval/appointment models, cancellation and rescheduling, idempotency, audit/outbox, SQS worker contracts, Cognito identity boundary, API Gateway edge design, ECS/RDS/VPC Terraform, Glue/Athena analytics, OpenTelemetry tracing, AI regression evaluation, Playwright browser smoke tests, external scheduler sandbox, and FDE rollout/support documentation.
+
+Remaining work is environment-specific wiring: provision the AWS account, configure approved model access, connect the real clinic scheduling interface, and complete production promotion gates.
+
+## Windows quickstart
+
+Backend: create a Python 3.11 virtual environment in `backend`, install `pip install -e ".[dev]"`, then run `uvicorn app.main:app --reload`.
+
+Frontend: run `npm install` and `npm run dev` inside `frontend`.
+
+Quality: run Ruff, MyPy, pytest and `python -m app.ai.evaluate` inside `backend`.
+
+Browser smoke test: run `npm install`, `npx playwright install chromium`, then `npm run test:e2e` inside `frontend`.
+
+Docker Desktop is not required for the normal local development path.
