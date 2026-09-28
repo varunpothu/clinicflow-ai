@@ -8,9 +8,11 @@ resource "aws_iam_role" "glue" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect    = "Allow"
-      Principal = { Service = "glue.amazonaws.com" }
-      Action    = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "glue.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
     }]
   })
 }
@@ -22,11 +24,14 @@ resource "aws_iam_role_policy" "glue" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow"
-        Action   = ["s3:GetObject", "s3:ListBucket"]
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket",
+        ]
         Resource = [
           aws_s3_bucket.analytics.arn,
-          "${aws_s3_bucket.analytics.arn}/*"
+          "${aws_s3_bucket.analytics.arn}/*",
         ]
       },
       {
@@ -35,15 +40,19 @@ resource "aws_iam_role_policy" "glue" {
           "glue:GetDatabase",
           "glue:GetTable",
           "glue:CreateTable",
-          "glue:UpdateTable"
+          "glue:UpdateTable",
         ]
         Resource = "*"
       },
       {
-        Effect   = "Allow"
-        Action   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+        ]
         Resource = "*"
-      }
+      },
     ]
   })
 }
