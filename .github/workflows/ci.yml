@@ -26,6 +26,8 @@ jobs:
         run: mypy app
       - name: Tests
         run: pytest -q
+      - name: AI regression gate
+        run: python -m app.ai.evaluate
 
   terraform:
     runs-on: ubuntu-latest
