@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.db.dependencies import get_session
+from app.repositories.appointment_requests import AppointmentRequestRepository
 from app.schemas.appointment import AppointmentRequestAccepted, AppointmentRequestCreate
 from app.security.auth import Principal
 from app.security.dependencies import require_demo_permission
@@ -10,6 +11,30 @@ from app.security.rbac import Permission
 from app.services.persistent_intake import PersistentIntakeService
 
 router = APIRouter(prefix="/appointment-requests", tags=["appointment-requests"])
+
+
+@router.get("/{request_id}")
+async def get_appointment_request(
+    request_id,
+    principal: Principal = Depends(
+        require_demo_permission(Permission.REQUEST_APPOINTMENT)
+    ),
+    session: AsyncSession = Depends(get_session),
+) -> dict[str, object]:
+    from uuid import UUID
+
+    record = await AppointmentRequestRepository(session).get(UUID(str(request_id)))
+    if record is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="REQUEST_NOT_FOUND")
+    if principal.role.value == "PATIENT" and principal.subject_id != UUID(record.patient_id):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="FORBIDDEN")
+    return {
+        "request_id": record.id,
+        "patient_id": record.patient_id,
+        "appointment_type": record.appointment_type,
+        "status": record.status,
+        "created_at": record.created_at.isoformat(),
+    }
 
 
 @router.post("", response_model=AppointmentRequestAccepted, status_code=status.HTTP_202_ACCEPTED)
