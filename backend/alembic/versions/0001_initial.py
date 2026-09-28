@@ -126,6 +126,7 @@ def upgrade() -> None:
         sa.Column("state", sa.String(40), nullable=False),
         sa.Column("payload", sa.Text(), nullable=True),
         sa.Column("occurred_at", sa.DateTime(timezone=True), nullable=False),
+        sa.UniqueConstraint("workflow_id", "sequence_number", name="uq_workflow_event_sequence"),
     )
     op.create_index("ix_workflow_events_workflow_id", "workflow_events", ["workflow_id"])
 
