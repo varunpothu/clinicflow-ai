@@ -1,0 +1,19 @@
+{
+  "clinic": {
+    "name": "NorthStar Health Clinic",
+    "timezone": "Europe/London",
+    "locations": [
+      {"id": "loc-london", "name": "NorthStar Central"}
+    ]
+  },
+  "clinicians": [
+    {"id": "clinician-001", "name": "Dr. Sarah Wilson", "specialty": "General Practice"},
+    {"id": "clinician-002", "name": "Dr. Liam Shah", "specialty": "Dermatology"},
+    {"id": "clinician-003", "name": "Dr. Maya Patel", "specialty": "Cardiology"}
+  ],
+  "appointment_types": [
+    {"id": "routine_consultation", "name": "Routine consultation", "duration_minutes": 30},
+    {"id": "follow_up", "name": "Follow-up", "duration_minutes": 20},
+    {"id": "new_patient", "name": "New patient consultation", "duration_minutes": 45}
+  ]
+}
