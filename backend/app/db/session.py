@@ -4,7 +4,7 @@ from app.core.config import get_settings
 
 
 settings = get_settings()
-database_url = settings.database_url
+database_url = settings.resolved_database_url
 if database_url.startswith("sqlite:///"):
     database_url = database_url.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
 
