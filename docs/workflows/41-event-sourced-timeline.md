@@ -27,3 +27,7 @@ Example:
 9. BOOKED
 
 The event timeline is not a full event-sourcing architecture. The appointment tables remain authoritative for current business state; the workflow timeline is the operational history.
+
+## Concurrency note
+
+The workflow event table enforces a unique workflow_id + sequence_number constraint. The production append repository must retry on sequence collisions rather than allowing duplicate timeline positions.
