@@ -5,6 +5,7 @@ from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel, Field
 
 from app.domain.availability import AvailabilityEngine
+from app.domain.proposal import AppointmentProposal
 from app.services.approval import ApprovalService
 from app.services.booking import BookingConflict, BookingService
 from app.services.proposal_store import ProposalStore
