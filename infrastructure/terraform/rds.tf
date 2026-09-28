@@ -5,7 +5,6 @@ resource "aws_db_subnet_group" "postgres" {
 
 resource "random_password" "db" {
   length  = 32
-
   special = true
 }
 
@@ -15,6 +14,7 @@ resource "aws_secretsmanager_secret" "database" {
 
 resource "aws_secretsmanager_secret_version" "database" {
   secret_id = aws_secretsmanager_secret.database.id
+
   secret_string = jsonencode({
     username = "clinicflow"
     password = random_password.db.result
