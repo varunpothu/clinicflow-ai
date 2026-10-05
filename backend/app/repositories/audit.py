@@ -24,11 +24,11 @@ class AuditRepository:
         occurred_at: datetime,
     ) -> AuditEventRecord:
         event = AuditEventRecord(
-            id=str(uuid4()),
+            id=uuid4(),
             event_type=event_type,
-            actor_id=str(actor_id) if actor_id else None,
-            workflow_id=str(workflow_id) if workflow_id else None,
-            entity_id=str(entity_id) if entity_id else None,
+            actor_id=actor_id,
+            workflow_id=workflow_id,
+            entity_id=entity_id,
             correlation_id=correlation_id,
             summary=summary,
             metadata_json=json.dumps(metadata or {}, sort_keys=True),
