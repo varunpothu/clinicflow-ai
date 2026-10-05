@@ -34,7 +34,7 @@ class MockAIProvider:
         elif "reschedule" in lowered or "move my appointment" in lowered:
             intent = "RESCHEDULE_APPOINTMENT"
             clarification = False
-        elif any(token in lowered for token in ("book", "appointment", "see dr", "consultation")):
+        elif any(token in lowered for token in ("book", "appointment", "see dr", "consultation", "monday", "tuesday", "wednesday", "thursday", "friday", "morning", "afternoon", "evening", "after", "before", "pm", "am")):
             intent = "BOOK_APPOINTMENT"
             clarification = "soon" in lowered and not any(
                 token in lowered for token in ("monday", "tuesday", "wednesday", "thursday", "friday", "morning", "afternoon", "evening", "pm", "am")
