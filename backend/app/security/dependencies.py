@@ -25,6 +25,9 @@ def get_principal(
         except ValueError as exc:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="INVALID_ROLE") from exc
 
+        if role == Role.PATIENT and not x_demo_subject:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="AUTH_REQUIRED")
+
         subject_id = uuid4()
         if x_demo_subject:
             try:
