@@ -32,3 +32,17 @@ output "cognito_domain" {
   value       = aws_cognito_user_pool_domain.clinic.domain
   description = "Cognito hosted login domain prefix."
 }
+output "frontend_bucket_name" {
+  value       = aws_s3_bucket.frontend.id
+  description = "Private S3 bucket containing the React build."
+}
+
+output "cloudfront_distribution_id" {
+  value       = aws_cloudfront_distribution.web.id
+  description = "CloudFront distribution used for the frontend."
+}
+
+output "frontend_url" {
+  value       = "https://${aws_cloudfront_distribution.web.domain_name}"
+  description = "CloudFront URL for the ClinicFlow web application."
+}
