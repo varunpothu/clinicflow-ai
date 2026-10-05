@@ -2,6 +2,7 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
+import pytest_asyncio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
@@ -10,7 +11,7 @@ from app.models import Appointment, Approval, AuditEventRecord, OutboxEvent, Pro
 from app.services.persistent_approval import PersistentApprovalService
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def session_factory() -> async_sessionmaker:
     engine = create_async_engine("sqlite+aiosqlite:///:memory:")
     async with engine.begin() as connection:
